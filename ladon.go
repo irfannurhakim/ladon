@@ -2,6 +2,7 @@ package ladon
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/go-errors/errors"
 	"github.com/ory-am/common/compiler"
@@ -35,12 +36,16 @@ func (g *Ladon) doPoliciesAllow(r *Request, policies []Policy) (err error) {
 			continue
 		}
 
-		// Does the subject match with one of the policies?
-		if sm, err := Match(p, p.GetSubjects(), r.Subject); err != nil {
-			return err
-		} else if !sm {
-			// no, continue to next policy
-			continue
+		// Iterate throgh all subjects
+		subs := strings.Split(r.Subject, ",")
+		for _, sub := range subs {
+			// Does the subject match with one of the policies?
+			if sm, err := Match(p, p.GetSubjects(), sub); err != nil {
+				return err
+			} else if !sm {
+				// no, continue to next policy
+				continue
+			}
 		}
 
 		// Does the resource match with one of the policies?

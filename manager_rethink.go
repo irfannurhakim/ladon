@@ -2,6 +2,7 @@ package ladon
 
 import (
 	"encoding/json"
+	"strings"
 	"sync"
 
 	"time"
@@ -126,14 +127,17 @@ func (m *RethinkManager) FindPoliciesForSubject(subject string) (Policies, error
 	m.RLock()
 	defer m.RUnlock()
 
+	subs := strings.Split(subject, ",")
 	ps := Policies{}
-	for _, p := range m.Policies {
-		if ok, err := Match(p, p.GetSubjects(), subject); err != nil {
-			return Policies{}, err
-		} else if !ok {
-			continue
+	for _, sub := range subs {
+		for _, p := range m.Policies {
+			if ok, err := Match(p, p.GetSubjects(), sub); err != nil {
+				return Policies{}, err
+			} else if !ok {
+				continue
+			}
+			ps = append(ps, p)
 		}
-		ps = append(ps, p)
 	}
 	return ps, nil
 }
